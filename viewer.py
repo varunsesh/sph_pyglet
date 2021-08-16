@@ -3,44 +3,69 @@ from pyglet.window import key
 from pyglet.window import mouse
 from pyglet import shapes
 
-
-
 from main.Solver import Solver
 import math
 
-window = pyglet.window.Window()
-batch = pyglet.graphics.Batch()
+
+####List of Global Constants
+deltaT = 0.01
+tfinal = 1.0
+H = 16.0 # Parameter for kernel function influence
+HSQ = H*H
+height_dam = 4
+grav = 9.81
+nu = 0.8927
+Re = height_dam*math.sqrt(grav*height_dam)/nu
+
+## Variables needed for rendering
 position = []
 circle = []
+scale = 25
+r = 10
 
-@window.event
-def on_key_press(symbol, modifiers):
-    if symbol==key.A:
-        print("Key A was pressed")
-    elif symbol==key.ENTER:
-        print("Key Enter was pressed")
 
-@window.event
-def on_mouse_press(x, y, button, modifiers):
-    if button == mouse.LEFT:
-        print("Left click")
+##Creating an OpenGL context
+window = pyglet.window.Window(caption = "SPH")
+batch = pyglet.graphics.Batch()
+
+fps_display = pyglet.window.FPSDisplay(window=window)
+
+
 
 def get_postions(x,y):
     global position
     t = 0.5
-    position.append((x+t,y+t))
-    
-
+    if len(position)>15:
+        position = []
+    position.append((x,y))
 
 @window.event
 def on_draw():
-    r = 10
-    scale = 50   
+    global circle
+    window.clear()
     for i in range(len(position)):
+        if len(circle)>len(position):
+            circle = []
         circle.append(shapes.Circle(scale*position[i][0], scale*position[i][1], r, color=(50, 225, 30), batch=batch))
         circle[-1].opacity = 120
-    window.clear()
     batch.draw()
+    fps_display.draw()
+
+
+def drange(start, stop, step):
+    r = start
+    while r < stop:
+        yield r
+        r += step
+
+
+
+
+def update(dt, solver):
+    ##Update particle positions
+    p_list = solver.UpdatePos()
+    for p in p_list:
+        get_postions(p.position.x, p.position.y)
 
 
 
@@ -49,18 +74,12 @@ window.push_handlers(event_logger)
 
 if __name__=="__main__":
     solver = Solver()
-    deltaT = 0.01
-    tfinal = 1.0
-    H = 16.0 # Parameter for kernel function influence
-    HSQ = H*H
-    height_dam = 4
-    grav = 9.81
-    nu = 0.8927
-    Re = height_dam*math.sqrt(grav*height_dam)/nu
+   
     particles = solver.InitSPH(Re, height_dam)
+        
     
-    for i in range(len(particles)):
-        get_postions(particles[i].position.x, particles[i].position.y)
-    
+    pyglet.clock.get_fps()
+    pyglet.clock.schedule_interval(update, 1/60, solver)
+
     pyglet.app.run()
 
