@@ -16,7 +16,8 @@ height_dam = 4
 grav = 9.81
 nu = 0.8927
 Re = height_dam*math.sqrt(grav*height_dam)/nu
-
+rho0 = 1.0
+k = 1.0
 ## Variables needed for rendering
 position = []
 circle = []
@@ -47,7 +48,7 @@ def on_draw():
         if len(circle)>len(position):
             circle = []
         circle.append(shapes.Circle(scale*position[i][0], scale*position[i][1], r, color=(50, 225, 30), batch=batch))
-        circle[-1].opacity = 120
+        
     batch.draw()
     fps_display.draw()
 
@@ -63,7 +64,7 @@ def drange(start, stop, step):
 
 def update(dt, solver):
     ##Update particle positions
-    p_list = solver.UpdatePos()
+    p_list = solver.update_pos()
     for p in p_list:
         get_postions(p.position.x, p.position.y)
 
@@ -73,9 +74,9 @@ event_logger = pyglet.window.event.WindowEventLogger()
 window.push_handlers(event_logger)
 
 if __name__=="__main__":
-    solver = Solver()
+    solver = Solver(HSQ, rho0, k)
    
-    particles = solver.InitSPH(Re, height_dam)
+    particles = solver.init_sph(Re, height_dam)
         
     
     pyglet.clock.get_fps()
