@@ -6,7 +6,7 @@ import math
 class Solver():
     
 
-    def __init__(self, H, rho0, k):
+    def __init__(self, H, rho0, k, domain_width=None, domain_height=None, padding=2.0):
         self.pm = ParticleManager()
         self.deltaT = 0.01
         self.H = H
@@ -14,6 +14,9 @@ class Solver():
         self.k = k #constant for pressure density equivalence (compressiblity thingy perhaps)
         self.HSQ = self.H*self.H
         self.__kernel_constant = 315/(1*math.pi*pow(H, 9.0))
+        self.domain_width = domain_width
+        self.domain_height = domain_height
+        self.padding = padding
 
 
 
@@ -71,6 +74,24 @@ class Solver():
             acc = p.force / p.rho if hasattr(p, 'force') and p.rho != 0 else Vector2D(0, 0)
             p.velocity += acc * self.deltaT
             p.position += p.velocity * self.deltaT
+            # Boundary conditions
+            if self.domain_width is not None and self.domain_height is not None:
+                # Left wall
+                if p.position.x < self.padding:
+                    p.position.x = self.padding
+                    p.velocity.x *= -0.5
+                # Right wall
+                if p.position.x > self.domain_width - self.padding:
+                    p.position.x = self.domain_width - self.padding
+                    p.velocity.x *= -0.5
+                # Bottom wall
+                if p.position.y < self.padding:
+                    p.position.y = self.padding
+                    p.velocity.y *= -0.5
+                # Top wall
+                if p.position.y > self.domain_height - self.padding:
+                    p.position.y = self.domain_height - self.padding
+                    p.velocity.y *= -0.5
         return self.pm.particleList
 
 

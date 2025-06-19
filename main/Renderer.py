@@ -10,7 +10,7 @@ import numpy as np
 
 class App:
     
-    def __init__(self, particles, solver, window_width=640, window_height=480):
+    def __init__(self, particles, solver, lock, window_width=640, window_height=480):
         # Initialize Pygame and set up the OpenGL context
         pygame.init()
         screen = pygame.display.set_mode((int(window_width), int(window_height)), DOUBLEBUF | OPENGL)
@@ -24,6 +24,7 @@ class App:
         glLoadIdentity()
         self.particles = particles
         self.solver = solver
+        self.lock = lock
 
         self.main_loop()
 
@@ -76,15 +77,14 @@ class App:
                     running = False
 
             glClear(GL_COLOR_BUFFER_BIT)
-            self.solver.step()  # Advance SPH simulation
-
-            for particle in self.particles:
-                self.draw_circle(particle.position, particle.radius, (0.0, 0.7, 1.0))
-                #compute forces on each particle
-                #update position
-                # above two done by solver
+            with self.lock:
+                for particle in self.particles:
+                    self.draw_circle(particle.position, particle.radius, (0.0, 0.7, 1.0))
+                    #compute forces on each particle
+                    #update position
+                    # above two done by solver
 
             pygame.display.flip()
-            pygame.time.wait(10)
+            pygame.time.wait(33)  # ~30 FPS
 
         pygame.quit()
