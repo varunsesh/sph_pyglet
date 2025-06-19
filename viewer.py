@@ -79,7 +79,7 @@ if __name__=="__main__":
     particles = solver.init_sph(Re, height_dam)
         
     
-    pyglet.clock.get_fps()
+    pyglet.clock.get_frequency()
     pyglet.clock.schedule_interval(update, 1/60, solver)
 
     pyglet.app.run()

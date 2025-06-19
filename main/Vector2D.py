@@ -65,4 +65,14 @@ class Vector2D:
     def to_polar(self):
         """Return the vector's components in polar coordinates."""
         return self.__abs__(), math.atan2(self.y, self.x)
+    
+    def length(self):
+        """Return the length of the vector."""
+        return self.__abs__()
 
+    def normalized(self):
+        """Return a unit vector in the same direction as self."""
+        length = self.__abs__()
+        if length == 0:
+            raise ValueError("Cannot normalize a zero-length vector")
+        return Vector2D(self.x / length, self.y / length)
